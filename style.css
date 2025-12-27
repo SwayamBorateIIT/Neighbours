@@ -1,3 +1,17 @@
+/* Info stream styles */
+.info-stream {
+  min-height: 32px;
+
+  background: transparent;
+ 
+  border-radius: 8px;
+  color: #1e60a3;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  
+  transition: background 0.2s;
+}
 * {
   box-sizing: border-box;
 }
