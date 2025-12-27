@@ -1,0 +1,658 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --paper: #fdfbf7;
+}
+
+body {
+  margin: 0;
+  padding: 10px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Dot grid background pattern (theme) */
+  background-color: var(--paper);
+  background-image: radial-gradient(#e3e0d9 1px, transparent 1px);
+  background-size: 20px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: auto;
+}
+.start-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  /* Use the same dotted background, hide game behind */
+  background-color: var(--paper);
+  background-image: radial-gradient(#e3e0d9 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.start-card {
+  width: 520px;
+  max-width: 92vw;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+  border: 2px solid rgba(0,0,0,0.08);
+  padding: 28px 32px;
+  text-align: center;
+}
+
+.logo {
+  margin: 0 0 8px 0;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #d4b417; /* blue theme */
+  text-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.subtitle {
+  margin: 0 0 18px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.start-actions {
+  display: grid;
+  gap: 14px;
+}
+
+.start-btn {
+  padding: 12px 22px;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+.start-btn:active { transform: translateY(2px); }
+
+.start-btn-primary { background: #f7941e; color: #fff; }
+.start-btn-secondary { background: #fff; color: #1f1f1f; }
+
+
+.game-container {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+}
+
+.game-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -20px;
+  position: relative;
+}
+
+.info-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f7941e;
+  color: white;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.info-icon:hover {
+  background: #f08810;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.info-icon:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.game-logo {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.boards-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 0;
+}
+
+.player-card {
+  position: relative;
+  width: 45%;
+  aspect-ratio: 1 / 1.25;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  container-type: inline-size;
+}
+
+.player-card.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.player-card.active {
+  outline: 4px solid #4caf50;
+  outline-offset: 4px;
+}
+
+.player-title {
+  position: absolute;
+  color: #000;
+  font-weight: 700;
+  font-size: 6cqi;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3em 0.5em;
+  background: transparent;
+  border-radius: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.player1 {
+  background-image: url("assets/pp22.png");
+  background-color: transparent;
+}
+
+.player1 .player-title {
+  top: 10%;
+  left: 46%;
+  transform: rotate(2deg);
+  
+}
+
+.player2 {
+  background-image: url("assets/pp11.png");
+  background-color: transparent;
+}
+
+.player2 .player-title {
+  top: 10%;
+  left: 20%;
+  transform: rotate(-2deg);
+}
+
+.board-overlay {
+  position: absolute;
+  /* Adjust these percentages to align grid with board area */
+  top: 18%;
+  left: 18%;
+  width: 64%;
+  height: 60%;
+
+}
+  .player1 .board-overlay {
+    top: 19.3%;
+    left: 39.5%;
+    width: 49.3%;
+    height: 44%;
+    transform: skewX(+25deg) rotateX(-25deg) skewY(+5deg);
+  }
+
+  .player2 .board-overlay {
+    top: 20.8%;
+    left: 10.8%;
+    width: 50%;
+    height: 41%;
+    transform: skewX(+1deg) rotateX(-15deg) skewY(+1deg);
+  }
+
+.grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 2px;
+  transform: skewX(-13deg) rotateX(-20deg) skewY(-3deg);
+}
+
+.cell {
+  border: 1px dashed rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-weight: 700;
+  color: #1f1f1f;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+
+.cell:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.05);
+}
+
+.cell.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cell.filled {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.6);
+  font-weight: 800;
+  cursor: default;
+}
+
+.cell.group-highlight {
+  position: relative;
+  z-index: 5;
+}
+
+/* ========================================
+   HORIZONTAL GROUPS - Use ::before
+   ======================================== */
+.cell.h-group.h-start::before {
+  content: '';
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  border: 3px solid rgba(255, 60, 100, 0.85);
+  background: rgba(255, 142, 60, 0.12);
+  animation: pulseOval 1.5s ease-in-out infinite;
+  top: -8px;
+  bottom: -8px;
+  left: -10px;
+  /* Width will be set dynamically, but default for 2 cells */
+  width: calc(200% + 16px);
+  border-radius: 50% / 60%; /* Horizontal ellipse */
+}
+
+/* For groups of 3 cells horizontally */
+.cell.h-group.h-start[data-group-size-h="3"]::before {
+  width: calc(300% + 24px);
+  border-radius: 50% / 50%;
+}
+
+/* For groups of 4 cells horizontally */
+.cell.h-group.h-start[data-group-size-h="4"]::before {
+  width: calc(400% + 32px);
+  border-radius: 50% / 40%;
+}
+
+/* For groups of 5 cells horizontally */
+.cell.h-group.h-start[data-group-size-h="5"]::before {
+  width: calc(500% + 40px);
+  border-radius: 50% / 35%;
+}
+
+/* ========================================
+   VERTICAL GROUPS - Use ::after
+   ======================================== */
+.cell.v-group.v-start::after {
+  content: '';
+  position: absolute;
+  z-index: 9;
+  pointer-events: none;
+  border: 3px solid rgba(255, 60, 100, 0.85);
+  background: rgba(255, 142, 60, 0.12);
+  animation: pulseOval 1.5s ease-in-out infinite;
+  top: -10px;
+  left: -8px;
+  right: -8px;
+  /* Height will be set dynamically, but default for 2 cells */
+  height: calc(200% + 16px);
+  border-radius: 60% / 50%; /* Vertical ellipse */
+}
+
+/* For groups of 3 cells vertically */
+.cell.v-group.v-start[data-group-size-v="3"]::after {
+  height: calc(300% + 24px);
+  border-radius: 50% / 50%;
+}
+
+/* For groups of 4 cells vertically */
+.cell.v-group.v-start[data-group-size-v="4"]::after {
+  height: calc(400% + 32px);
+  border-radius: 40% / 50%;
+}
+
+/* For groups of 5 cells vertically */
+.cell.v-group.v-start[data-group-size-v="5"]::after {
+  height: calc(500% + 40px);
+  border-radius: 35% / 50%;
+}
+
+@keyframes pulseOval {
+  0%, 100% { 
+    border-color: rgba(255, 60, 100, 0.7);
+    box-shadow: 0 0 12px rgba(255, 60, 100, 0.5);
+  }
+  50% { 
+    border-color: rgba(255, 60, 100, 1);
+    box-shadow: 0 0 25px rgba(255, 60, 100, 0.8);
+  }
+}
+
+/* Hide entire grid when it's opponent's turn */
+.player-card:not(.show) .board-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Controls Panel */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+
+.btn {
+  position: relative;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 0 6px 0 #1e60a3;
+  color: #fff;
+  background: #3b9afd;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn .emoji {
+  font-size: 18px;
+}
+
+.btn:active {
+  box-shadow: 0 0 0 #1e60a3;
+  transform: translateY(6px);
+}
+
+.btn-roll {
+  background: #3b9afd;
+}
+
+.btn-roll.rolling {
+  animation: roll-shake 0.8s cubic-bezier(0.25, 0.8, 0.4, 1);
+}
+
+.btn-help {
+  color: #fff;
+  min-width: 52px;
+  text-align: center;
+}
+
+.btn-undo {
+  background: #3b9afd;
+}
+
+.btn-next {
+  background: #3b9afd;
+}
+
+.btn-quit {
+  background: #ef5350;
+}
+
+.btn-help:hover,
+.btn-roll:hover,
+.btn-undo:hover,
+.btn-next:hover,
+.btn-quit:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes roll-shake {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  15% { transform: translateY(-2px) rotate(-8deg) scale(1.03); }
+  35% { transform: translateY(2px) rotate(10deg) scale(0.98); }
+  55% { transform: translateY(-2px) rotate(-12deg) scale(1.02); }
+  75% { transform: translateY(1px) rotate(8deg) scale(1); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+.btn-roll.rolling .emoji {
+  animation: dice-icon-spin 0.8s ease;
+}
+
+@keyframes dice-icon-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .boards-container {
+    gap: 30px;
+  }
+
+  .game-container {
+    gap: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .boards-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+  }
+
+  .player-card {
+    width: 85%;
+    max-width: 500px;
+  }
+
+  .label {
+    top: -50px;
+    font-size: 18px;
+  }
+
+  .controls {
+    gap: 15px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* RULES MODAL */
+.rules-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.rules-modal.show {
+  display: flex;
+}
+
+.rules-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: hidden;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.4, 1);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #1f1f1f;
+}
+
+.rules-content h2 {
+  color: #1f1f1f;
+  font-size: 28px;
+  margin: 0 0 25px 0;
+  text-align: center;
+}
+
+.rules-section {
+  margin-bottom: 25px;
+}
+
+.rules-section h3 {
+  color: #f7941e;
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-weight: 800;
+}
+
+.rules-section p {
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.rules-section ol,
+.rules-section ul {
+  color: #555;
+  line-height: 1.8;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.rules-section li {
+  margin-bottom: 8px;
+}
+
+.rules-section strong {
+  color: #1f1f1f;
+}
+
+@media (max-width: 768px) {
+  .rules-content {
+    margin: 20px;
+    padding: 25px;
+    max-height: 90vh;
+  }
+
+  .rules-content h2 {
+    font-size: 24px;
+  }
+
+  .rules-section h3 {
+    font-size: 16px;
+  }
+
+  .rules-section p {
+    font-size: 14px;
+  }
+
+  .close-btn {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .game-container {
+    gap: 25px;
+  }
+
+  .player-card {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .label {
+    top: -40px;
+    font-size: 16px;
+  }
+}

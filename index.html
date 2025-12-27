@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neighbours - Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Start Mode Selection Overlay -->
+  <div id="modeSelect" class="start-overlay" aria-hidden="false">
+    <div class="start-card">
+      <h1 class="logo">Neighbours</h1>
+      <p class="subtitle">Select your challenge</p>
+      <div class="start-actions">
+        <button id="modePvP" class="start-btn start-btn-primary">👥 Player vs Player</button>
+        <button id="modePVC" class="start-btn start-btn-secondary">🤖 Player vs Computer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-container">
+
+    <div class="game-header" aria-label="Neighbours game logo">
+      <button id="infoBtn" class="info-icon" aria-label="Game Rules">ℹ</button>
+      <svg class="game-logo" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle logoDesc">
+        <title id="logoTitle">Neighbours - The Dice Placement Game</title>
+        <desc id="logoDesc">Playful rooftop wordmark with a dice for the letter O</desc>
+        <defs>
+          <filter id="sketchy">
+            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+          </filter>
+          <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" class="roof-grad-start" />
+            <stop offset="100%" class="roof-grad-end" />
+          </linearGradient>
+        </defs>
+
+        <path d="M50,80 Q70,50 100,70 T150,60 T200,80" fill="none" stroke="#BDE0FE" stroke-width="8" stroke-linecap="round" />
+        <path d="M450,40 Q480,10 510,40 T560,30" fill="none" stroke="#BDE0FE" stroke-width="8" stroke-linecap="round" />
+
+        <g font-family="'Comic Sans MS', 'Chalkboard SE', 'Fredoka One', sans-serif" font-weight="900" font-size="80" fill="url(#roofGrad)" stroke="#2F2A28" stroke-width="3" filter="url(#sketchy)">
+          <text x="20" y="100">NEIGHB</text>
+          <g transform="translate(355, 45)">
+            <rect x="0" y="0" width="60" height="60" rx="10" ry="10" fill="#3DA9FC" stroke="#2F2A28" stroke-width="3" transform="rotate(10, 30, 30)" />
+            <g fill="#FFFFFF" transform="rotate(10, 30, 30)">
+              <circle cx="15" cy="15" r="5" />
+              <circle cx="45" cy="15" r="5" />
+              <circle cx="30" cy="30" r="5" />
+              <circle cx="15" cy="45" r="5" />
+              <circle cx="45" cy="45" r="5" />
+            </g>
+          </g>
+          <text x="430" y="100">URS</text>
+        </g>
+
+        <path d="M25,45 L50,20 L75,45 Z" fill="#D9534F" stroke="#2F2A28" stroke-width="3" filter="url(#sketchy)" />
+
+      </svg>
+    </div>
+
+    <div class="boards-container">
+      <div class="player-card player1">
+        <div class="player-title">Player 1</div>
+        <div class="board-overlay">
+          <div class="grid"></div>
+        </div>
+       
+      </div>
+
+      <div class="player-card player2">
+        <div class="player-title">Player 2</div>
+        <div class="board-overlay">
+          <div class="grid"></div>
+        </div>
+      
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="rollBtn" class="btn btn-roll">Roll Dice <span class="emoji" aria-hidden="true">🎲</span></button>
+      <button id="helpBtn" class="btn btn-help" aria-label="Help">?</button>
+      <button id="undoBtn" class="btn btn-undo">Undo <span class="emoji" aria-hidden="true">↩</span></button>
+      <button id="nextBtn" class="btn btn-next">End Turn <span class="emoji" aria-hidden="true">⏭</span></button>
+      <button id="quitBtn" class="btn btn-quit">Quit <span class="emoji" aria-hidden="true">🚪</span></button>
+    </div>
+
+  </div>
+
+  <!-- Rules Modal -->
+  <div id="rulesModal" class="rules-modal">
+    <div class="rules-content">
+      <button id="closeRulesBtn" class="close-btn">&times;</button>
+      <h2>How to Play Neighbours</h2>
+      
+      <div class="rules-section">
+        <h3>Objective</h3>
+        <p>Score the most points by creating groups of matching numbers in rows and columns.</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Gameplay</h3>
+        <ol>
+          <li><strong>Roll the Dice:</strong> Click "Roll Dice" to roll two dice and get a number (2-12)</li>
+          <li><strong>Place Your Number:</strong> Click any empty cell on your board to place the rolled number</li>
+          <li><strong>End Turn:</strong> Click "End Turn" to complete your placement</li>
+          <li><strong>Computer Plays:</strong> In vs Computer mode, the computer will automatically place its number</li>
+          <li><strong>Repeat:</strong> Continue until both players' boards are full</li>
+        </ol>
+      </div>
+
+      <div class="rules-section">
+        <h3>Scoring</h3>
+        <p>You earn points for groups of 2 or more matching numbers:</p>
+        <ul>
+          <li>Group of 2: (number) × 2</li>
+          <li>Group of 3: (number) × 3</li>
+          <li>Example: Three 5s in a row = 5 × 3 = 15 points</li>
+        </ul>
+        <p><strong>Bonus:</strong> Groups count in both horizontal AND vertical directions!</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Controls</h3>
+        <ul>
+          <li><strong>Roll Dice:</strong> Generate your next number</li>
+          <li><strong>Undo:</strong> Undo your last placement</li>
+          <li><strong>End Turn:</strong> Finish placing and pass to opponent</li>
+          <li><strong>Quit:</strong> Exit game and return to mode selection</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Tips</h3>
+        <ul>
+          <li>Plan ahead - think about where numbers will match in rows and columns</li>
+          <li>Rare numbers (1, 2, 11, 12) are valuable - place them strategically</li>
+          <li>Groups can span across multiple cells for bigger scores</li>
+          <li>In Computer mode, the AI makes smart placement decisions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
