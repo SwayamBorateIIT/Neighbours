@@ -1,60 +1,3 @@
-@media (max-width: 600px) {
-  .boards-container.pvp-mobile .player-card {
-    display: none !important;
-  }
-  .boards-container.pvp-mobile .player-card.show {
-    display: block !important;
-  }
-  .boards-container:not(.pvp-mobile) .player-card {
-    display: block !important;
-  }
-  .controls {
-    margin-top: 0;
-  }
-}
-@media (max-width: 600px) {
-  .game-header {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 0;
-    padding-top: 10px;
-  }
-  .info-icon {
-    position: static;
-    margin-bottom: 10px;
-    left: unset;
-    top: unset;
-    transform: none;
-  }
-  .game-logo {
-    max-width: 90vw;
-    margin: 0 auto;
-  }
-  .boards-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-  }
-  .player-card {
-    width: 98vw;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .controls {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    align-items: stretch;
-    margin-bottom: 10px;
-  }
-  .btn {
-    width: 100%;
-    min-width: 0;
-    font-size: 16px;
-    padding: 14px 0;
-    box-sizing: border-box;
-  }
-}
 * {
   box-sizing: border-box;
 }
@@ -245,7 +188,7 @@ body {
 }
 
 .player1 .player-title {
-  top: 10.5%;
+  top: 10%;
   left: 46%;
   transform: rotate(2deg);
   
