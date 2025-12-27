@@ -25,7 +25,12 @@ function getGameInstruction() {
     // PvP
     if (gameState.currentRoll === null) return `Player ${gameState.currentPlayer + 1}: Roll the dice to start your turn.`;
     if (!gameState.hasPlaced) return `Player ${gameState.currentPlayer + 1}: Place ${gameState.currentRoll} on your grid.`;
-    if (gameState.hasPlaced) return `Click End Turn to let Player ${gameState.currentPlayer === 0 ? 2 : 1} play.`;
+      // If both players have placed this roll, prompt the next player to roll (otherwise prompt to end turn)
+      if (gameState.placementsThisRoll >= 2) {
+        const nextPlayer = gameState.lastRoller === null ? 0 : 1 - gameState.lastRoller;
+        return `Player ${nextPlayer + 1}: Roll the dice to start your turn.`;
+      }
+      if (gameState.hasPlaced) return `Click End Turn to let Player ${gameState.currentPlayer === 0 ? 2 : 1} play.`;
     return '';
   }
 }
@@ -45,7 +50,8 @@ let gameState = {
   waitingForOverlay: false,
   vsComputer: false,
   lastPlacement: null, // {player, index, value} for undo
-  roller: 0 // 0 = Player rolls, 1 = Computer rolls (PvC mode)
+  roller: 0, // 0 = Player rolls, 1 = Computer rolls (PvC mode)
+  lastRoller: null // track who rolled the current roll (PvP only)
 };
 
 
@@ -182,6 +188,27 @@ function rollDice() {
   return dice1 + dice2;
 }
 
+// Animate the existing small badge (helpBtn) to rapidly cycle numbers then show final
+function animateBadge(finalValue, duration = 700, cb) {
+  if (!helpBtn) {
+    if (typeof cb === 'function') cb();
+    return;
+  }
+  const start = Date.now();
+  const intervalMs = 60;
+  const iv = setInterval(() => {
+    const now = Date.now();
+    if (now - start >= duration) return;
+    const r = Math.floor(Math.random() * 11) + 2; // 2..12
+    helpBtn.textContent = String(r);
+  }, intervalMs);
+  setTimeout(() => {
+    clearInterval(iv);
+    helpBtn.textContent = String(finalValue);
+    if (typeof cb === 'function') cb();
+  }, duration);
+}
+
 function handleRollClick() {
   if (gameState.gameOver) return;
   if (gameState.hasRolled) return; // Already rolled, wait for placement
@@ -190,26 +217,36 @@ function handleRollClick() {
   // Roll the dice
   if (gameState.vsComputer && gameState.roller === 1) {
     streamInfo('Computer is rolling the dice...');
+    const final = rollDice();
     setTimeout(() => {
-      gameState.currentRoll = rollDice();
-      gameState.hasRolled = true;
-      gameState.hasPlaced = false;
-      gameState.lastPlacement = null;
-      updateRollBadge();
-      updateUI();
-      renderBoard(gameState.currentPlayer);
-      enableEmptyCells(gameState.currentPlayer);
-    }, 900);
+      // animate in the existing badge area then apply
+      animateBadge(final, 900, () => {
+        gameState.lastRoller = gameState.currentPlayer;
+        gameState.currentRoll = final;
+        gameState.hasRolled = true;
+        gameState.hasPlaced = false;
+        gameState.lastPlacement = null;
+        updateRollBadge();
+        updateUI();
+        renderBoard(gameState.currentPlayer);
+        enableEmptyCells(gameState.currentPlayer);
+      });
+    }, 300);
     return;
   }
-  gameState.currentRoll = rollDice();
-  gameState.hasRolled = true;
-  gameState.hasPlaced = false;
-  gameState.lastPlacement = null;
-  updateRollBadge();
-  updateUI();
-  renderBoard(gameState.currentPlayer);
-  enableEmptyCells(gameState.currentPlayer);
+  const final = rollDice();
+  // animate the badge so numbers flash then final appears
+  animateBadge(final, 700, () => {
+    gameState.lastRoller = gameState.currentPlayer;
+    gameState.currentRoll = final;
+    gameState.hasRolled = true;
+    gameState.hasPlaced = false;
+    gameState.lastPlacement = null;
+    updateRollBadge();
+    updateUI();
+    renderBoard(gameState.currentPlayer);
+    enableEmptyCells(gameState.currentPlayer);
+  });
 }
 
 function updateRollBadge() {
@@ -257,6 +294,12 @@ function handleCellClick(playerIndex, index) {
   if (checkGameOver()) {
     handleGameOver();
   }
+  // Auto-advance round when both players have placed (PvP or PvC)
+  if (gameState.placementsThisRoll >= 2) {
+    setTimeout(() => {
+      endRound();
+    }, 350);
+  }
 }
 
 // ========================================
@@ -297,57 +340,40 @@ function endTurn() {
   gameState.lastPlacement = null;
 
   if (gameState.vsComputer) {
-    // PvC mode: alternate dice roller, but after any roll, player always places first
+    // PvC mode: determine who rolls and who places
     if (gameState.currentPlayer === 0) {
-      // Player just placed, now computer places
-      gameState.currentPlayer = 1;
-      updateMasking();
-      updateUI();
-      renderBoard(1);
-      setTimeout(() => {
-        computerPlaceIfNeeded();
-      }, 400);
-    } else {
-      // Computer just placed, now check if game is over, else alternate roller
-      if (checkGameOver()) {
-        handleGameOver();
-        return;
+      // Player just placed
+      if (gameState.roller === 0) {
+        // Player was the roller this round, computer should now place the same number
+        gameState.currentPlayer = 1;
+        updateMasking();
+        updateUI();
+        renderBoard(1);
+        setTimeout(() => {
+          computerPlaceIfNeeded();
+        }, 400);
       }
-      setTimeout(() => {
-        // Alternate roller
-        gameState.roller = 1 - gameState.roller;
-        gameState.currentRoll = null;
-        gameState.hasRolled = false;
+      // If roller was computer, this case shouldn't happen (computer places first)
+    } else {
+      // Computer just placed
+      if (gameState.roller === 1) {
+        // Computer was the roller this round, player should now place the same number
+        gameState.currentPlayer = 0;
         gameState.hasPlaced = false;
-        gameState.placementsThisRoll = 0;
-        if (gameState.roller === 1) {
-          // Computer's turn to roll
-          gameState.currentPlayer = 1;
-          updateRollBadge(false);
-          updateMasking();
-          updateUI();
-          renderBoard(1);
-          setTimeout(() => {
-            gameState.currentRoll = rollDice();
-            gameState.hasRolled = true;
-            gameState.hasPlaced = false;
-            updateRollBadge(false);
-            // After computer rolls, player places first
-            gameState.currentPlayer = 0;
-            updateMasking();
-            updateUI();
-            renderBoard(0);
-            enableEmptyCells(0);
-          }, 600);
-        } else {
-          // Player's turn to roll (wait for player to click roll)
-          gameState.currentPlayer = 0;
-          updateRollBadge(false);
-          updateMasking();
-          updateUI();
-          renderBoard(0);
+        updateMasking();
+        updateUI();
+        renderBoard(0);
+        enableEmptyCells(0);
+      } else {
+        // Player was the roller, both have now placed — advance round
+        if (checkGameOver()) {
+          handleGameOver();
+          return;
         }
-      }, 600);
+        setTimeout(() => {
+          endRound();
+        }, 350);
+      }
     }
     return;
   }
@@ -385,7 +411,17 @@ function endRound() {
   gameState.hasPlaced = false;
   gameState.currentRoll = null;
   gameState.placementsThisRoll = 0;
-  gameState.currentPlayer = 0;
+  
+  // For PvC: alternate who rolls next (player or computer)
+  if (gameState.vsComputer) {
+    gameState.roller = 1 - gameState.roller;
+    // Just set the currentPlayer for the next roller; actual rolling/placement handled by roll button or auto-roll
+    gameState.currentPlayer = gameState.roller; // 0 = player, 1 = computer
+  } else {
+    // PvP: alternate which player gets to roll next based on who rolled this round
+    const nextRoller = gameState.lastRoller === null ? 0 : 1 - gameState.lastRoller;
+    gameState.currentPlayer = nextRoller;
+  }
   gameState.lastPlacement = null;
 
   // Render both boards
@@ -396,10 +432,7 @@ function endRound() {
   updateUI();
   updateMasking();
 
-  // Show overlay for Player 1 to start next round (only in PvP mode)
-  if (!gameState.vsComputer) {
-    showTurnOverlay(0);
-  }
+  // Do not show start-of-round overlay for either player in PvP mode.
 }
 
 // ========================================
@@ -418,6 +451,9 @@ function quitGame() {
     waitingForOverlay: false,
     vsComputer: false,
     lastPlacement: null
+    ,
+    lastRoller: null,
+    roller: 0
   };
 
   // Clear any overlays
@@ -879,7 +915,42 @@ function computerPlaceIfNeeded() {
       handleGameOver();
       return;
     }
-    endTurn();
+    
+    // Check if both players have now placed this roll
+    if (gameState.placementsThisRoll >= 2) {
+      // Both placed — advance to next round
+      setTimeout(() => {
+        endRound();
+        // If computer's turn to roll next, auto-roll and place, then player places
+        if (gameState.vsComputer && gameState.roller === 1 && gameState.currentRoll === null) {
+          streamInfo('Computer is rolling the dice...');
+          setTimeout(() => {
+            const final = rollDice();
+            animateBadge(final, 700, () => {
+              gameState.lastRoller = 1;
+              gameState.currentRoll = final;
+              gameState.hasRolled = true;
+              gameState.hasPlaced = false;
+              updateRollBadge();
+              updateUI();
+              renderBoard(1);
+              // Computer places automatically after its own roll
+              setTimeout(() => {
+                computerPlaceIfNeeded();
+              }, 300);
+            });
+          }, 300);
+        }
+      }, 350);
+    } else {
+      // Only one player placed so far — switch to other player to place same roll
+      gameState.currentPlayer = 0;
+      gameState.hasPlaced = false;
+      updateMasking();
+      updateUI();
+      renderBoard(0);
+      enableEmptyCells(0);
+    }
   }, 900);
 }
 
