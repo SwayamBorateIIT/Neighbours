@@ -1,4 +1,15 @@
 @media (max-width: 600px) {
+  .boards-container.pvp-mobile .player-card {
+    display: none;
+  }
+  .boards-container.pvp-mobile .player-card.show {
+    display: block;
+  }
+  .controls {
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
   .game-header {
     flex-direction: column;
     align-items: flex-start;

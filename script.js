@@ -68,21 +68,27 @@ function createGrid() {
 // MASKING - Hide inactive player board
 // ========================================
 function updateMasking() {
-  // In vs Computer mode, don't hide boards (only Player 1 plays)
+  // Mobile: show only current player's board in PvP
+  const isMobile = window.innerWidth <= 600;
   if (gameState.vsComputer) {
     board1.classList.add('show');
     board2.classList.add('show');
+    boardsContainer.classList.remove('pvp-mobile');
     return;
   }
-
-  // In vs Player mode, hide opponent's board
   const isPlayer1Active = gameState.currentPlayer === 0;
-
-  if (isPlayer1Active) {
-    board1.classList.add('show');
-    board2.classList.remove('show');
+  if (isMobile) {
+    boardsContainer.classList.add('pvp-mobile');
+    if (isPlayer1Active) {
+      board1.classList.add('show');
+      board2.classList.remove('show');
+    } else {
+      board1.classList.remove('show');
+      board2.classList.add('show');
+    }
   } else {
-    board1.classList.remove('show');
+    boardsContainer.classList.remove('pvp-mobile');
+    board1.classList.add('show');
     board2.classList.add('show');
   }
 }
