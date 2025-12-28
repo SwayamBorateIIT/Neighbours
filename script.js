@@ -103,10 +103,26 @@ function createGrid() {
 // MASKING - Hide inactive player board
 // ========================================
 function updateMasking() {
-  // In vs Computer mode, don't hide boards (only Player 1 plays)
+  const isMobile = window.innerWidth <= 480;
+
+  // In vs Computer mode
   if (gameState.vsComputer) {
-    board1.classList.add('show');
-    board2.classList.add('show');
+    // On mobile: show only the player whose turn it is
+    if (isMobile) {
+      if (gameState.currentPlayer === 0) {
+        // Player's turn - show Player 1
+        board1.classList.add('show');
+        board2.classList.remove('show');
+      } else {
+        // Computer's turn - show Computer (Player 2)
+        board1.classList.remove('show');
+        board2.classList.add('show');
+      }
+    } else {
+      // On desktop: show both boards
+      board1.classList.add('show');
+      board2.classList.add('show');
+    }
     return;
   }
 
@@ -910,6 +926,7 @@ function computerPlaceIfNeeded() {
     gameState.placementsThisRoll += 1;
     gameState.lastPlacement = null;
     renderBoard(1);
+    updateMasking();
     updateUI();
     if (checkGameOver()) {
       handleGameOver();
@@ -990,6 +1007,11 @@ document.addEventListener('keydown', function (e) {
     e.preventDefault();
     if (!rollBtn.disabled) rollBtn.click();
   }
+});
+
+// Handle window resize to reapply mobile masking
+window.addEventListener('resize', function() {
+  updateMasking();
 });
 
 // ========================================
