@@ -330,18 +330,19 @@ function handleCellClick(playerIndex, index) {
     handleGameOver();
   }
   
-  // In PvC mode, auto-trigger computer's move after player places
-  if (gameState.vsComputer && gameState.currentPlayer === 0) {
-    setTimeout(() => {
-      gameState.currentPlayer = 1;
-      computerPlaceIfNeeded();
-    }, 500);
-  } 
   // Auto-advance round when both players have placed (PvP or PvC)
-  else if (gameState.placementsThisRoll >= 2) {
+  if (gameState.placementsThisRoll >= 2) {
     setTimeout(() => {
       endRound();
     }, 350);
+  }
+  // In PvC mode, auto-trigger computer's move after player places (only if computer hasn't placed yet)
+  else if (gameState.vsComputer && gameState.currentPlayer === 0 && gameState.placementsThisRoll < 2) {
+    setTimeout(() => {
+      gameState.currentPlayer = 1;
+      gameState.hasPlaced = false;
+      computerPlaceIfNeeded();
+    }, 500);
   }
 }
 
@@ -785,12 +786,8 @@ function updateUI() {
     nextBtn.style.display = 'block';
   }
   
-  // Hide Undo button in PvP mode
-  if (!gameState.vsComputer) {
-    undoBtn.style.display = 'none';
-  } else {
-    undoBtn.style.display = 'block';
-  }
+  // Hide Undo button in all modes
+  undoBtn.style.display = 'none';
   
   streamInfo(getGameInstruction());
 }
@@ -879,12 +876,18 @@ function showTurnOverlay(playerIndex) {
 function setupModeSelection() {
   if (!modeOverlay) return;
 
+  const player1Title = document.querySelector('.player1 .player-title');
+  const player2Title = document.querySelector('.player2 .player-title');
+
   if (modePvP) {
     modePvP.addEventListener('click', () => {
       gameState.vsComputer = false;
       modeOverlay.style.display = 'none';
       if (gameContainer) gameContainer.style.display = 'block';
       gameState.waitingForOverlay = false;
+      // Set titles for PvP mode
+      if (player1Title) player1Title.textContent = 'Player 1';
+      if (player2Title) player2Title.textContent = 'Player 2';
       renderBoard(gameState.currentPlayer);
       updateMasking();
       updateUI();
@@ -896,6 +899,9 @@ function setupModeSelection() {
       modeOverlay.style.display = 'none';
       if (gameContainer) gameContainer.style.display = 'block';
       gameState.waitingForOverlay = false;
+      // Set titles for PvC mode
+      if (player1Title) player1Title.textContent = 'You';
+      if (player2Title) player2Title.textContent = 'AI';
       renderBoard(gameState.currentPlayer);
       updateMasking();
       updateUI();
@@ -978,14 +984,14 @@ function computerPlaceIfNeeded() {
       // Both placed — advance to next round
       setTimeout(() => {
         endRound();
-        // If computer's turn to roll next, auto-roll and place, then player places
-        if (gameState.vsComputer && gameState.roller === 1 && gameState.currentRoll === null) {
+        // If computer's turn to roll next, auto-roll and place
+        if (gameState.vsComputer && gameState.currentPlayer === 1) {
           streamInfo('Computer is rolling the dice...');
           setTimeout(() => {
-            const final = rollDice();
-            animateBadge(final, 700, () => {
+            const rollResult = rollDice();
+            animateDiceRoll(600, rollResult.dice1, rollResult.dice2, () => {
               gameState.lastRoller = 1;
-              gameState.currentRoll = final;
+              gameState.currentRoll = rollResult.sum;
               gameState.hasRolled = true;
               gameState.hasPlaced = false;
               updateUI();
