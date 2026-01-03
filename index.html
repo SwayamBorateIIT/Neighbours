@@ -69,6 +69,28 @@
        
       </div>
 
+      <div class="dice-section">
+        <div class="dice-container">
+          <div class="dice" id="dice1" aria-label="Die 1">
+            <div class="dice-face" data-number="1"><span class="dot"></span></div>
+            <div class="dice-face" data-number="2"><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          </div>
+          <div class="dice" id="dice2" aria-label="Die 2">
+            <div class="dice-face" data-number="1"><span class="dot"></span></div>
+            <div class="dice-face" data-number="2"><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="dice-face" data-number="6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          </div>
+        </div>
+        <button id="rollBtn" class="btn btn-roll">Roll Dice <span class="emoji" aria-hidden="true">🎲</span></button>
+      </div>
+
       <div class="player-card player2">
         <div class="player-title">Player 2</div>
         <div class="board-overlay">
@@ -80,8 +102,6 @@
 
     <div id="infoStream" class="info-stream"></div>
     <div class="controls">
-      <button id="rollBtn" class="btn btn-roll">Roll Dice <span class="emoji" aria-hidden="true">🎲</span></button>
-      <button id="helpBtn" class="btn btn-help" aria-label="Help">?</button>
       <button id="undoBtn" class="btn btn-undo">Undo <span class="emoji" aria-hidden="true">↩</span></button>
       <button id="nextBtn" class="btn btn-next">End Turn <span class="emoji" aria-hidden="true">⏭</span></button>
       <button id="quitBtn" class="btn btn-quit">Quit <span class="emoji" aria-hidden="true">🚪</span></button>

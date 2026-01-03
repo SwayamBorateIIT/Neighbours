@@ -13,11 +13,11 @@ function getGameInstruction() {
     }
     if (gameState.roller === 0) {
       if (gameState.currentPlayer === 0 && !gameState.hasPlaced) return `Player: Place ${gameState.currentRoll} on your grid.`;
-      if (gameState.currentPlayer === 0 && gameState.hasPlaced) return 'Click End Turn to let the computer place.';
+      if (gameState.currentPlayer === 0 && gameState.hasPlaced) return 'Computer is placing the number...';
       if (gameState.currentPlayer === 1 && !gameState.hasPlaced) return 'Computer is placing the number...';
     } else {
       if (gameState.currentPlayer === 0 && !gameState.hasPlaced) return `Player: Place ${gameState.currentRoll} on your grid.`;
-      if (gameState.currentPlayer === 0 && gameState.hasPlaced) return 'Click End Turn to let the computer place.';
+      if (gameState.currentPlayer === 0 && gameState.hasPlaced) return 'Computer is placing the number...';
       if (gameState.currentPlayer === 1 && !gameState.hasPlaced) return 'Computer is placing the number...';
     }
     return '';
@@ -68,10 +68,11 @@ const rollBtn = document.getElementById('rollBtn');
 const undoBtn = document.getElementById('undoBtn');
 const nextBtn = document.getElementById('nextBtn');
 const quitBtn = document.getElementById('quitBtn');
-const helpBtn = document.getElementById('helpBtn');
 const infoBtn = document.getElementById('infoBtn');
 const rulesModal = document.getElementById('rulesModal');
 const closeRulesBtn = document.getElementById('closeRulesBtn');
+let dice1Element = null;
+let dice2Element = null;
 // Start overlay elements
 const modeOverlay = document.getElementById('modeSelect');
 const modePvP = document.getElementById('modePvP');
@@ -201,26 +202,49 @@ function disableEmptyCells(playerIndex) {
 function rollDice() {
   const dice1 = Math.floor(Math.random() * 6) + 1;
   const dice2 = Math.floor(Math.random() * 6) + 1;
-  return dice1 + dice2;
+  return { dice1, dice2, sum: dice1 + dice2 };
 }
 
-// Animate the existing small badge (helpBtn) to rapidly cycle numbers then show final
-function animateBadge(finalValue, duration = 700, cb) {
-  if (!helpBtn) {
-    if (typeof cb === 'function') cb();
-    return;
-  }
-  const start = Date.now();
-  const intervalMs = 60;
-  const iv = setInterval(() => {
-    const now = Date.now();
-    if (now - start >= duration) return;
-    const r = Math.floor(Math.random() * 11) + 2; // 2..12
-    helpBtn.textContent = String(r);
-  }, intervalMs);
+function setDiceFace(diceElement, number) {
+  if (!diceElement) return;
+  const faces = diceElement.querySelectorAll('.dice-face');
+  faces.forEach(face => {
+    face.style.visibility = 'hidden';
+  });
+  const target = diceElement.querySelector(`[data-number="${number}"]`);
+  if (target) target.style.visibility = 'visible';
+}
+
+function animateDiceRoll(duration = 600, finalDice1, finalDice2, cb) {
+  [dice1Element, dice2Element].forEach(die => {
+    if (die) die.classList.add('rolling');
+  });
+  
+  // Change dice faces during animation
+  const interval = 100; // Change face every 100ms
+  const steps = Math.ceil(duration / interval);
+  let step = 0;
+  
+  const changeInterval = setInterval(() => {
+    const randomDice1 = Math.floor(Math.random() * 6) + 1;
+    const randomDice2 = Math.floor(Math.random() * 6) + 1;
+    setDiceFace(dice1Element, randomDice1);
+    setDiceFace(dice2Element, randomDice2);
+    step++;
+    
+    if (step >= steps) {
+      clearInterval(changeInterval);
+    }
+  }, interval);
+  
   setTimeout(() => {
-    clearInterval(iv);
-    helpBtn.textContent = String(finalValue);
+    clearInterval(changeInterval);
+    [dice1Element, dice2Element].forEach(die => {
+      if (die) die.classList.remove('rolling');
+    });
+    // Set final faces
+    setDiceFace(dice1Element, finalDice1);
+    setDiceFace(dice2Element, finalDice2);
     if (typeof cb === 'function') cb();
   }, duration);
 }
@@ -230,19 +254,21 @@ function handleRollClick() {
   if (gameState.hasRolled) return; // Already rolled, wait for placement
   if (gameState.vsComputer && gameState.roller !== 0) return; // Only player can roll when roller is 0
 
+  if (!dice1Element) dice1Element = document.getElementById('dice1');
+  if (!dice2Element) dice2Element = document.getElementById('dice2');
+
   // Roll the dice
   if (gameState.vsComputer && gameState.roller === 1) {
     streamInfo('Computer is rolling the dice...');
-    const final = rollDice();
+    const rollResult = rollDice();
+    const final = rollResult.sum;
     setTimeout(() => {
-      // animate in the existing badge area then apply
-      animateBadge(final, 900, () => {
+      animateDiceRoll(600, rollResult.dice1, rollResult.dice2, () => {
         gameState.lastRoller = gameState.currentPlayer;
         gameState.currentRoll = final;
         gameState.hasRolled = true;
         gameState.hasPlaced = false;
         gameState.lastPlacement = null;
-        updateRollBadge();
         updateUI();
         renderBoard(gameState.currentPlayer);
         enableEmptyCells(gameState.currentPlayer);
@@ -250,25 +276,18 @@ function handleRollClick() {
     }, 300);
     return;
   }
-  const final = rollDice();
-  // animate the badge so numbers flash then final appears
-  animateBadge(final, 700, () => {
+  const rollResult = rollDice();
+  const final = rollResult.sum;
+  animateDiceRoll(600, rollResult.dice1, rollResult.dice2, () => {
     gameState.lastRoller = gameState.currentPlayer;
     gameState.currentRoll = final;
     gameState.hasRolled = true;
     gameState.hasPlaced = false;
     gameState.lastPlacement = null;
-    updateRollBadge();
     updateUI();
     renderBoard(gameState.currentPlayer);
     enableEmptyCells(gameState.currentPlayer);
   });
-}
-
-function updateRollBadge() {
-  if (helpBtn) {
-    helpBtn.textContent = gameState.currentRoll === null ? '?' : String(gameState.currentRoll);
-  }
 }
 
 // ========================================
@@ -310,8 +329,16 @@ function handleCellClick(playerIndex, index) {
   if (checkGameOver()) {
     handleGameOver();
   }
+  
+  // In PvC mode, auto-trigger computer's move after player places
+  if (gameState.vsComputer && gameState.currentPlayer === 0) {
+    setTimeout(() => {
+      gameState.currentPlayer = 1;
+      computerPlaceIfNeeded();
+    }, 500);
+  } 
   // Auto-advance round when both players have placed (PvP or PvC)
-  if (gameState.placementsThisRoll >= 2) {
+  else if (gameState.placementsThisRoll >= 2) {
     setTimeout(() => {
       endRound();
     }, 350);
@@ -741,7 +768,7 @@ function updateUI() {
   // Update button states
   const canRoll = hasRolled === false && !gameState.gameOver;
   const canUndo = gameState.lastPlacement !== null && gameState.hasPlaced;
-  const canEndTurn = gameState.hasPlaced && !gameState.gameOver;
+  const canEndTurn = gameState.hasPlaced && !gameState.gameOver && !gameState.vsComputer;
 
   rollBtn.disabled = !canRoll;
   undoBtn.disabled = !canUndo;
@@ -750,8 +777,21 @@ function updateUI() {
   rollBtn.classList.toggle('disabled', !canRoll);
   undoBtn.classList.toggle('disabled', !canUndo);
   nextBtn.classList.toggle('disabled', !canEndTurn);
-
-  updateRollBadge();
+  
+  // Hide End Turn button in PvC mode
+  if (gameState.vsComputer) {
+    nextBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = 'block';
+  }
+  
+  // Hide Undo button in PvP mode
+  if (!gameState.vsComputer) {
+    undoBtn.style.display = 'none';
+  } else {
+    undoBtn.style.display = 'block';
+  }
+  
   streamInfo(getGameInstruction());
 }
 
@@ -948,7 +988,6 @@ function computerPlaceIfNeeded() {
               gameState.currentRoll = final;
               gameState.hasRolled = true;
               gameState.hasPlaced = false;
-              updateRollBadge();
               updateUI();
               renderBoard(1);
               // Computer places automatically after its own roll
@@ -1018,6 +1057,12 @@ window.addEventListener('resize', function() {
 // INITIALIZATION
 // ========================================
 document.addEventListener('DOMContentLoaded', function() {
+  // Grab dice elements and show initial face
+  dice1Element = document.getElementById('dice1');
+  dice2Element = document.getElementById('dice2');
+  setDiceFace(dice1Element, 1);
+  setDiceFace(dice2Element, 1);
+
   // Build grids
   createGrid();
 
