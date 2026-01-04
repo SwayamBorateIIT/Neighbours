@@ -105,6 +105,8 @@ function createGrid() {
 // ========================================
 function updateMasking() {
   const isMobile = window.innerWidth <= 480;
+  // Reset container state for mobile ordering helpers
+  boardsContainer.classList.remove('player1-active', 'player2-active');
 
   // In vs Computer mode
   if (gameState.vsComputer) {
@@ -112,10 +114,12 @@ function updateMasking() {
     if (isMobile) {
       if (gameState.currentPlayer === 0) {
         // Player's turn - show Player 1
+        boardsContainer.classList.add('player1-active');
         board1.classList.add('show');
         board2.classList.remove('show');
       } else {
         // Computer's turn - show Computer (Player 2)
+        boardsContainer.classList.add('player2-active');
         board1.classList.remove('show');
         board2.classList.add('show');
       }
@@ -129,6 +133,10 @@ function updateMasking() {
 
   // In vs Player mode, hide opponent's board
   const isPlayer1Active = gameState.currentPlayer === 0;
+
+  if (isMobile) {
+    boardsContainer.classList.add(isPlayer1Active ? 'player1-active' : 'player2-active');
+  }
 
   if (isPlayer1Active) {
     board1.classList.add('show');

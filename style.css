@@ -1,4 +1,4 @@
-/* Info stream styles */
+
 .info-stream {
   min-height: 32px;
 
@@ -1104,13 +1104,45 @@ body {
     max-width: 100%;
   }
 
-  /* Hide the inactive player card completely */
-  .player-card:not(.show) {
+  /* Keep dice below whichever board is active */
+  .boards-container.player1-active .player1 {
+    order: 0;
+    display: block !important;
+  }
+
+  .boards-container.player1-active .player2 {
+    order: 2;
     display: none !important;
   }
 
-  .player-card.show {
+  .boards-container.player1-active .dice-section {
+    order: 1;
+  }
+
+  .boards-container.player2-active .player2 {
+    order: 0;
     display: block !important;
+  }
+
+  .boards-container.player2-active .player1 {
+    order: 2;
+    display: none !important;
+  }
+
+  .boards-container.player2-active .dice-section {
+    order: 1;
+  }
+
+  .dice-section {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    z-index: auto;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .controls {
